@@ -1,51 +1,139 @@
-<input type="number" id="salary" placeholder="Monthly Salary">
-<input type="number" id="production" placeholder="12-hour Production">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Worker Salary & Production Calculator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 420px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .output p {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Salary & Production Calculator</h2>
+    
+    <label>Worker Name:</label>
+    <input type="text" id="workerName" placeholder="Enter worker name">
 
-<br><br>
+    <label>Worker Salary (per month):</label>
+    <input type="number" id="workerSalary" placeholder="Enter monthly salary">
 
-<label for="multiplyCheck">
-  <input type="checkbox" id="multiplyCheck" onchange="toggleInput()">
-  Multiply by hours
-</label>
+    <label>Production in 12 hours:</label>
+    <input type="number" id="production" placeholder="Enter production units">
 
-<br>
+    <label>Calculate for hours:</label>
+    <input type="number" id="hours" placeholder="Enter hours">
 
-<input type="number" id="multiplier" placeholder="Enter number of hours" disabled>
+    <button onclick="calculate()">Calculate</button>
+    <button onclick="downloadPDF()">Download PDF</button>
 
-<br><br>
+    <div class="output" id="output"></div>
+  </div>
 
-<button onclick="calculate()">Calculate</button>
+  <script>
+    let results = "";
+    let workerName = "";
+    let workerSalary = 0;
+    let production12 = 0;
 
-<p id="result"></p>
+    function calculate() {
+      workerName = document.getElementById('workerName').value;
+      workerSalary = parseInt(document.getElementById('workerSalary').value);
+      production12 = parseInt(document.getElementById('production').value);
+      const a = parseInt(document.getElementById('hours').value);
 
-<script>
-function toggleInput() {
-    let check = document.getElementById("multiplyCheck");
-    document.getElementById("multiplier").disabled = !check.checked;
-}
+      if (!workerName || isNaN(workerSalary) || isNaN(production12) || isNaN(a)) {
+        document.getElementById('output').innerHTML = "<p>Please fill all fields correctly.</p>";
+        return;
+      }
 
-function calculate() {
-    let salary = parseFloat(document.getElementById("salary").value);
-    let production = parseFloat(document.getElementById("production").value);
-    let isMultiply = document.getElementById("multiplyCheck").checked;
-    let multiplier = parseFloat(document.getElementById("multiplier").value);
+      const daily_salary = workerSalary / 30;
+      const hourly_salary = daily_salary / 8;
+      const production_per_hour = production12 / 12;
+      const cost_per_rupees = production_per_hour / hourly_salary;
+      const production_in_a_hours = production_per_hour * a;
 
-    let daily = salary / 30;
-    let hourly = daily / 8;
+      results = `
+        Worker Name: ${workerName}\n
+        Worker Salary (per month): ${workerSalary}\n
+        Production in 12 Hours: ${production12}\n
+        Salary in One Day (8 hrs): ${daily_salary}\n
+        Salary in One Hour: ${hourly_salary}\n
+        Production in One Hour: ${production_per_hour}\n
+        No. of Pieces in 1 Rupee: ${cost_per_rupees}\n
+        Production in ${a} hours: ${production_in_a_hours}
+      `;
 
-    let productionPerHour = production / 12;
-
-    if (isMultiply && !isNaN(multiplier)) {
-        hourly *= multiplier;
-        productionPerHour *= multiplier;
+      document.getElementById('output').innerHTML = results.replace(/\n/g, "<br>");
     }
 
-    let piecesPerRupee = productionPerHour / hourly;
-
-    document.getElementById("result").innerHTML = `
-        Hourly Salary: ₹${hourly.toFixed(2)} <br>
-        Production: ${productionPerHour.toFixed(2)} pieces <br>
-        1 Rupee = ${piecesPerRupee.toFixed(4)} pieces
-    `;
-}
-</script>
+    function downloadPDF() {
+      if (!results) {
+        alert("Please calculate first before downloading PDF.");
+        return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text("Worker Salary & Production Report", 10, 10);
+      doc.setFontSize(12);
+      doc.text(results, 10, 20);
+      doc.save("worker_calculation.pdf");
+    }
+  </script>
+</body>
+</html>
