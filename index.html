@@ -133,33 +133,47 @@
         document.getElementById('output').innerHTML = "";
       }
     }
-
     function downloadPDF() {
-      if (allResults.length === 0) {
-        alert("Please add at least one worker before downloading PDF.");
-        return;
-      }
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFontSize(14);
-      doc.text("Worker Salary & Production Report", 10, 10);
-      doc.setFontSize(12);
+  if (allResults.length === 0) {
+    alert("Please add at least one worker before downloading PDF.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(14);
+  doc.text("Worker Salary & Production Report", 10, 10);
+  doc.setFontSize(12);
 
-      let y = 20;
-      allResults.forEach((res, index) => {
-        doc.text(`--- Worker ${index+1} ---`, 10, y);
-        y += 10;
-        res.split("\n").forEach(line => {
-          if (line.trim() !== "") {
-            doc.text(line.trim(), 10, y);
-            y += 8;
-          }
-        });
-        y += 10;
-      });
+  let y = 20;
+  const pageHeight = doc.internal.pageSize.height;
 
-      doc.save("worker_report.pdf");
+  allResults.forEach((res, index) => {
+    // If near bottom, add a new page
+    if (y > pageHeight - 40) {
+      doc.addPage();
+      y = 20;
     }
-  </script>
+
+    doc.text(`--- Worker ${index+1} ---`, 10, y);
+    y += 10;
+
+    res.split("\n").forEach(line => {
+      if (line.trim() !== "") {
+        // Check again for page overflow
+        if (y > pageHeight - 20) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line.trim(), 10, y);
+        y += 8;
+      }
+    });
+    y += 10;
+  });
+
+  doc.save("worker_report.pdf");
+}
+
+</script>
 </body>
 </html>
