@@ -1,0 +1,51 @@
+<input type="number" id="salary" placeholder="Monthly Salary">
+<input type="number" id="production" placeholder="12-hour Production">
+
+<br><br>
+
+<label for="multiplyCheck">
+  <input type="checkbox" id="multiplyCheck" onchange="toggleInput()">
+  Multiply by hours
+</label>
+
+<br>
+
+<input type="number" id="multiplier" placeholder="Enter number of hours" disabled>
+
+<br><br>
+
+<button onclick="calculate()">Calculate</button>
+
+<p id="result"></p>
+
+<script>
+function toggleInput() {
+    let check = document.getElementById("multiplyCheck");
+    document.getElementById("multiplier").disabled = !check.checked;
+}
+
+function calculate() {
+    let salary = parseFloat(document.getElementById("salary").value);
+    let production = parseFloat(document.getElementById("production").value);
+    let isMultiply = document.getElementById("multiplyCheck").checked;
+    let multiplier = parseFloat(document.getElementById("multiplier").value);
+
+    let daily = salary / 30;
+    let hourly = daily / 8;
+
+    let productionPerHour = production / 12;
+
+    if (isMultiply && !isNaN(multiplier)) {
+        hourly *= multiplier;
+        productionPerHour *= multiplier;
+    }
+
+    let piecesPerRupee = productionPerHour / hourly;
+
+    document.getElementById("result").innerHTML = `
+        Hourly Salary: ₹${hourly.toFixed(2)} <br>
+        Production: ${productionPerHour.toFixed(2)} pieces <br>
+        1 Rupee = ${piecesPerRupee.toFixed(4)} pieces
+    `;
+}
+</script>
